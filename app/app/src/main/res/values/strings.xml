@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">TestRUUT</string>
+    <string name="email">Email</string>
+    <string name="password">Contraseña</string>
+    <string name="do_you_have_account">¿Aún no tienes una cuenta? Registrate</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="logout">Logout</string>
+    <string name="my_profile">Mi Perfil</string>
+    <string name="name_user">Nombre Usuario: %1$s</string>
+    <string name="email_field">Email: %1$s</string>
+    <string name="succesful_user_registration">Usuario registrado exitosamente</string>
+    <string name="user_name">Nombre de Usuario</string>
+    <string name="test_ruut">Test Ruut</string>
+    <string name="profile">Perfil</string>
+    <string name="registration">Registar</string>
 </resources>
