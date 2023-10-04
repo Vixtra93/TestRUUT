@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.project.testruut.data.repository.StockRepository
 import com.project.testruut.util.Resource
 import com.project.testruut.util.isValidEmail
-import com.project.testruut.util.isValidPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,6 +25,8 @@ class LoginViewModel @Inject constructor(private val repository: StockRepository
         state = state.copy(
             email = email,
             password = password,
+            isErrorEmail = email.isValidEmail().not() ,
+            isErrorPassword = (password.length > 4).not(),
             loginEnable = email.isValidEmail() && password.length > 4
         )
     }
@@ -41,7 +42,6 @@ class LoginViewModel @Inject constructor(private val repository: StockRepository
 
                     is Resource.Loading -> {
                         state = state.copy(isLoading = result.isLoading)
-
                     }
 
                     is Resource.Error -> {

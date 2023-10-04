@@ -13,4 +13,7 @@
     <string name="test_ruut">Test Ruut</string>
     <string name="profile">Perfil</string>
     <string name="registration">Registar</string>
+    <string name="enter_valid_email">Ingresa un correo valido</string>
+    <string name="input_login_pass_field">Error: Ingresa una contraseña valida que cumpla con el formato siguiente: Debe tener una logitud minima de 7 caracteres, contener una mayúscula , al menos una letra, un numero y un carácter especial</string>
+    <string name="invalid_user_name">%1$s No es un nombre de usuario valido</string>
 </resources>

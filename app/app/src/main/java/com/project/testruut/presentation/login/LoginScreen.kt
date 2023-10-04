@@ -1,5 +1,5 @@
 @file:OptIn(
-    ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class
 )
 
 package com.project.testruut.presentation.login
@@ -14,12 +14,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -68,22 +71,34 @@ fun UserLoginScreen(
         }
     } else {
         Column(modifier = modifier.padding(16.dp)) {
-            EmailField(state.email) { viewModel.onLoginChange(it, state.password) }
+            EmailField(state.email, state.isErrorEmail) {
+                viewModel.onLoginChange(
+                    it,
+                    state.password
+                )
+            }
             Spacer(modifier = Modifier.padding(4.dp))
-            PasswordField(state.password) { viewModel.onLoginChange(state.email, it) }
+            PasswordField(
+                password = state.password,
+                isErrorPassword = state.isErrorPassword
+            ) { viewModel.onLoginChange(state.email, it) }
             Spacer(modifier = Modifier.padding(8.dp))
             UserRegistration(modifier = Modifier.align(Alignment.End), navigateToUserRegistration)
             Spacer(modifier = Modifier.padding(16.dp))
-            LoginButton(stringResource(id = R.string.login),loginEnable = state.loginEnable, onLoginSelected = {
-                coroutineScope.launch {
-                    viewModel.onLoginUser(state.email, state.password, navigateToHome)
-                }
-            })
+            LoginButton(
+                stringResource(id = R.string.login),
+                loginEnable = state.loginEnable,
+                onLoginSelected = {
+                    coroutineScope.launch {
+                        viewModel.onLoginUser(state.email, state.password, navigateToHome)
+                    }
+                })
         }
     }
 
     stateLogin.let { status ->
         when (status) {
+
             is Resource.Error -> {
                 Toast.makeText(
                     LocalContext.current,
@@ -131,7 +146,12 @@ fun UserRegistration(modifier: Modifier, navigateToUserRegistration: () -> Unit)
 }
 
 @Composable
-fun PasswordField(password: String, onTextFieldChanged: (String) -> Unit) {
+fun PasswordField(
+    messageInputPass: String = "",
+    password: String,
+    isErrorPassword: Boolean,
+    onTextFieldChanged: (String) -> Unit
+) {
     var passwordVisibility by remember { mutableStateOf(false) }
     val icon = if (passwordVisibility)
         painterResource(id = R.drawable.ic_visibility)
@@ -140,6 +160,16 @@ fun PasswordField(password: String, onTextFieldChanged: (String) -> Unit) {
     TextField(
         value = password, onValueChange = { onTextFieldChanged(it) },
         placeholder = { Text(text = stringResource(R.string.password)) },
+        isError = isErrorPassword,
+        supportingText = {
+            if (isErrorPassword) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = messageInputPass,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        },
         trailingIcon = {
             IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
                 Icon(painter = icon, contentDescription = null)
@@ -162,7 +192,7 @@ fun PasswordField(password: String, onTextFieldChanged: (String) -> Unit) {
 }
 
 @Composable
-fun EmailField(email: String, onTextFieldChanged: (String) -> Unit) {
+fun EmailField(email: String, isErrorEmail: Boolean, onTextFieldChanged: (String) -> Unit) {
 
     TextField(
         value = email,
@@ -176,6 +206,20 @@ fun EmailField(email: String, onTextFieldChanged: (String) -> Unit) {
             textColor = WhiteText,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
-        )
+        ),
+        isError = isErrorEmail,
+        supportingText = {
+            if (isErrorEmail) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.enter_valid_email),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        },
+        trailingIcon = {
+            if (isErrorEmail)
+                Icon(Icons.Default.Warning, "error", tint = MaterialTheme.colorScheme.error)
+        }
     )
 }

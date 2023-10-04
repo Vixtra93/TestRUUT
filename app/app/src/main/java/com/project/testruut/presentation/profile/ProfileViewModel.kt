@@ -23,8 +23,8 @@ class ProfileViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            firebaseAuth.currentUser?.email.let {
-                getCurrenUserProfile(it!!)
+            firebaseAuth.currentUser?.email?.let {
+                getCurrenUserProfile(it)
             }
         }
 

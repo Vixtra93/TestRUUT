@@ -1,11 +1,12 @@
 package com.project.testruut.presentation.user_registration
 
-import com.project.testruut.util.Resource
-
-data class UserRegistrationState(
+data class UserRegistrationStateUI(
     var userName: String = "",
+    var isErrorUserName: Boolean = false,
     var email: String = "",
+    var isErrorEmail: Boolean = false,
     var password: String = "",
+    var isErrorPassword: Boolean = false,
     var userEnable: Boolean = false,
     var isLoading: Boolean = false
 )

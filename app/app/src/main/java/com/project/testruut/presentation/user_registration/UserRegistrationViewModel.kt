@@ -24,17 +24,25 @@ class UserRegistrationViewModel @Inject constructor(
     ViewModel() {
 
 
-    var state by mutableStateOf(UserRegistrationState())
+    var stateUI by mutableStateOf(UserRegistrationStateUI())
+    var stateResource by mutableStateOf(UserStatusResource())
 
-    private val _stateStatus = MutableLiveData<Resource<Unit>>()
-    val stateStatus: LiveData<Resource<Unit>> = _stateStatus
-    private fun isValidUserName(userName: String): Boolean {
+    fun isValidUserName(userName: String): Boolean {
         return userName.length > 5
     }
 
-    fun onRegistrationUserChange(userName: String, email: String, password: String) {
-        state = state.copy(
-            userName = userName, email = email, password = password,
+    fun onRegistrationUserChange(
+        userName: String,
+        email: String,
+        password: String
+    ) {
+        stateUI = stateUI.copy(
+            userName = userName,
+            email = email,
+            password = password,
+            isErrorEmail = email.isValidEmail().not(),
+            isErrorUserName = isValidUserName(userName).not(),
+            isErrorPassword = password.isValidPassword().not(),
             userEnable = isValidUserName(userName) && email.isValidEmail() && password.isValidPassword()
         )
 
@@ -50,12 +58,14 @@ class UserRegistrationViewModel @Inject constructor(
                             setUserDb(user, navigateToLogin)
                         }
 
-                        is Resource.Error -> _stateStatus.postValue(
-                            Resource.Error(message = result.message ?: "Ocurrió un error")
-                        )
+                        is Resource.Error -> {
+                            stateResource = UserStatusResource(
+                                Resource.Error(message = result.message ?: "Ocurrió un error")
+                            )
+                        }
 
                         is Resource.Loading -> {
-                            state = state.copy(isLoading = result.isLoading)
+                            stateUI = stateUI.copy(isLoading = result.isLoading)
                         }
                     }
 
@@ -68,19 +78,22 @@ class UserRegistrationViewModel @Inject constructor(
             repository.setUserRegistration(user).collect { result ->
                 when (result) {
                     is Resource.Success -> {
-                        _stateStatus.value = Resource.Success(Unit)
+                        stateResource = UserStatusResource(
+                            Resource.Success(Unit)
+                        )
                         navigateToLogin()
                     }
 
                     is Resource.Loading -> {
-                        state = state.copy(isLoading = result.isLoading)
+                        stateUI = stateUI.copy(isLoading = result.isLoading)
 
                     }
 
                     is Resource.Error -> {
-                        _stateStatus.value = Resource.Error(
-                            message = result.message ?: "Ocurrió un error al crear el usuario", null
+                        stateResource = UserStatusResource(
+                            Resource.Error(result.message ?: "Ocurrió un error al crear el usuario")
                         )
+
                     }
 
                 }

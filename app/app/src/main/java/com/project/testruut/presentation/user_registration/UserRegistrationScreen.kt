@@ -10,13 +10,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +32,6 @@ import com.project.testruut.presentation.login.EmailField
 import com.project.testruut.presentation.login.LoginButton
 import com.project.testruut.presentation.login.PasswordField
 import com.project.testruut.presentation.ui.theme.WhiteText
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.project.testruut.R
@@ -43,9 +45,9 @@ fun UserRegistrationScreen(
     modifier: Modifier = Modifier,
     viewModel: UserRegistrationViewModel = hiltViewModel()
 ) {
-    val state = viewModel.state
+    val state = viewModel.stateUI
 
-    val stateRegistration by viewModel.stateStatus.observeAsState()
+    val stateResource = viewModel.stateResource
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -59,52 +61,60 @@ fun UserRegistrationScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            UserNameField(state.userName) {
+            UserNameField(state.userName, state.isErrorUserName) {
                 viewModel.onRegistrationUserChange(
-                    it,
-                    state.email,
-                    state.password
+                    it.trim(),
+                    state.email.trim(),
+                    state.password.trim()
                 )
             }
             Spacer(modifier = Modifier.padding(4.dp))
-            EmailField(state.email) {
+            EmailField(state.email, state.isErrorEmail) {
                 viewModel.onRegistrationUserChange(
-                    state.userName,
-                    it,
-                    state.password
+                    state.userName.trim(),
+                    it.trim(),
+                    state.password.trim(),
                 )
             }
             Spacer(modifier = Modifier.padding(4.dp))
-            PasswordField(state.password) {
+            PasswordField(
+                stringResource(R.string.input_login_pass_field),
+                state.password,
+                state.isErrorPassword
+            ) {
                 viewModel.onRegistrationUserChange(
-                    state.userName,
-                    state.email,
+                    state.userName.trim(),
+                    state.email.trim(),
                     it
                 )
             }
             Spacer(modifier = Modifier.padding(16.dp))
-            LoginButton(stringResource(R.string.registration),loginEnable = state.userEnable, onLoginSelected = {
-                coroutineScope.launch {
-                    viewModel.onRegistrationSelected(
-                        User(
-                            userName = state.userName,
-                            email = state.email,
-                            password = state.password
-                        ),
-                        navigateToLogin = navigateToLogin
-                    )
-                }
-            })
+            LoginButton(
+                stringResource(R.string.registration),
+                loginEnable = state.userEnable,
+                onLoginSelected = {
+                    coroutineScope.launch {
+                        viewModel.onRegistrationSelected(
+                            User(
+                                userName = state.userName,
+                                email = state.email,
+                                password = state.password
+                            ),
+                            navigateToLogin = navigateToLogin
+                        )
+                    }
+                })
 
-            stateRegistration?.let {
+            stateResource.resource.let {
                 when (it) {
                     is Resource.Success -> {
                         LocalContext.current.toast(stringResource(R.string.succesful_user_registration))
+                        stateResource.resource = null
                     }
 
                     is Resource.Error -> {
                         LocalContext.current.toast(it.message.toString())
-
+                        stateResource.resource = null
                     }
 
                     else -> {}
@@ -116,8 +126,13 @@ fun UserRegistrationScreen(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserNameField(userName: String, onTextFieldChanged: (String) -> Unit) {
+fun UserNameField(
+    userName: String,
+    isErrorUserName: Boolean,
+    onTextFieldChanged: (String) -> Unit
+) {
 
     TextField(
         value = userName,
@@ -127,6 +142,20 @@ fun UserNameField(userName: String, onTextFieldChanged: (String) -> Unit) {
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
         singleLine = true,
         maxLines = 1,
+        isError = isErrorUserName,
+        supportingText = {
+            if (isErrorUserName) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.invalid_user_name, userName),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        },
+        trailingIcon = {
+            if (isErrorUserName)
+                Icon(Icons.Default.Warning, "error", tint = MaterialTheme.colorScheme.error)
+        },
         colors = TextFieldDefaults.textFieldColors(
             textColor = WhiteText,
             focusedIndicatorColor = Color.Transparent,
